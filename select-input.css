@@ -1,0 +1,24 @@
+.select-input:focus{
+    border: 2px solid #9BF;
+}
+.drop-down-menu{
+    height: 10em; 
+    overflow: auto;
+    border: 2px solid #9BF;
+}
+.drop-down-menu span{
+  display: block;
+  background-color: white;
+}
+.drop-down-menu span:hover{
+  background-color: #CCC;
+}
+.guesser{
+  display: none;
+  border: 1px solid grey;
+  background-color: white;
+  border-radius: 3px;
+}
+.guesser:hover{
+  background-color: #CCC;
+}
