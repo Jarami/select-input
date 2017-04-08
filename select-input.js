@@ -1,15 +1,13 @@
 ;(function($) {
-    $.fn.selectPlugin = function(){
-        var start = 1000;
-        var finish = 1;
+    $.fn.selectPlugin = function( numberOfPages ){
+        var start = 1;
+        var finish = numberOfPages;
         var list = [];
-        while (start >= finish){
+        while (start <= finish){
           list.push(start);
-          start -= 1;
+          start += 1;
         }
-        function pageSelected(){
-          console.log( $("#select-input").prop('value') )
-        }
+
         function find(arr, v){
           var i = 0;
           while ( (""+arr[i]).indexOf(v) ==-1  &&  i<arr.length){  i += 1  }
@@ -18,6 +16,10 @@
 
         var $selectInput = $(this);
         $selectInput.addClass("select-input");
+        
+        function pageSelected(){
+          console.log( $selectInput.prop('value') )
+        }
         
         function setText(page){
           $selectInput.prop('value',page);
@@ -36,10 +38,11 @@
 
         $dropDown[0].style.width =  width+'px';
         $dropDown[0].style.top =  $selectInput.position().top + $selectInput.prop("scrollHeight") + 4 + 'px';
+        $dropDown[0].style.left = $selectInput.position().left + 'px';
         $dropDown[0].style.position = 'absolute'
         
         $guesser[0].style.width =  width - 30 +'px';
-        $guesser[0].style.top =  $selectInput.position().top + $selectInput.prop("scrollHeight") + 4 + 'px';
+        $guesser[0].style.top =  $selectInput.position().top + $selectInput.prop("scrollHeight") + 'px';
         $guesser[0].style.left =  $selectInput.position().left + 10 + 'px';
         $guesser[0].style.position = 'absolute'
         
