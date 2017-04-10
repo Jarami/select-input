@@ -29,8 +29,7 @@ User::Module.modify :UTH_WebContainer_Monitoring do
 
         begin 
           planner = planners[params["planner"]][:planner]
-          time = params['time'] || User::UTH_Time.now
-          time = Time.at(time.to_i)
+          time = Time.parse(params['time'],"%d.%m.%Y") rescue User::UTH_Time.now
     
           h = User::UTH_ORM_Handlers.get(:Отчеты)
 
@@ -100,8 +99,7 @@ User::Module.modify :UTH_WebContainer_Monitoring do
         function notify(){  for(var i in observers){ observers[i].update() } }
         
         function makeURL(params){
-        //"&time=" + params.time +
-          return "planner_data?planner=" + params.planner +  "&action=" + params.action
+          return "planner_data?planner=" + params.planner +  "&action=" + params.action + "&time=" + params.time
         }
         this.send = function(params){
           var url = makeURL(params)
@@ -320,10 +318,7 @@ User::Module.modify :UTH_WebContainer_Monitoring do
                 var dataAction = $(e.target).attr("data-action");
                 if (dataAction){
                     var plannerSelector = document.getElementById("planner-selector");
-                    console.log( plannerSelector.value );
-                    console.log( plannerSelector.options[ plannerSelector.selectedIndex ].getAttribute("data-period") )
-                    console.log(dataAction)
-                    ajaxHandler.send({ planner: plannerSelector.value, action: dataAction})
+                    ajaxHandler.send({ planner: plannerSelector.value, action: dataAction, time: datepicker.getDate()})
                     if (dataAction=="download") $("#download-info").toggle(200);
 
                 }
@@ -334,6 +329,7 @@ User::Module.modify :UTH_WebContainer_Monitoring do
                   case "yearly": datepicker.selectYear(); break;
                   case "quarterly": datepicker.selectQuarter(); break;
                   case "monthly": datepicker.selectMonth(); break;
+                  case "decade": datepicker.selectDecade(); break;
                   case "daily": datepicker.selectDay(); break;
                   default: break;
                 }
@@ -482,7 +478,7 @@ User::Module.modify :UTH_WebContainer_Monitoring do
           display: block;
           border: 1px solid grey;
           position: relative;
-          width: 15em;
+          width: 18em;
           padding: 0em;
           
       }
@@ -500,7 +496,7 @@ User::Module.modify :UTH_WebContainer_Monitoring do
         border: 1px solid grey;
         padding: 0 !important;
         margin: 0 !important;
-        width: 15em;
+        width: 18em;
         height: 30px;
       }
     </style>

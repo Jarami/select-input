@@ -49,8 +49,7 @@
         function notify(){  for(var i in observers){ observers[i].update() } }
         
         function makeURL(params){
-        //"&time=" + params.time +
-          return "planner_data?planner=" + params.planner +  "&action=" + params.action
+          return "planner_data?planner=" + params.planner +  "&action=" + params.action + "&time=" + params.time
         }
         this.send = function(params){
           var url = makeURL(params)
@@ -269,10 +268,7 @@
                 var dataAction = $(e.target).attr("data-action");
                 if (dataAction){
                     var plannerSelector = document.getElementById("planner-selector");
-                    console.log( plannerSelector.value );
-                    console.log( plannerSelector.options[ plannerSelector.selectedIndex ].getAttribute("data-period") )
-                    console.log(dataAction)
-                    ajaxHandler.send({ planner: plannerSelector.value, action: dataAction})
+                    ajaxHandler.send({ planner: plannerSelector.value, action: dataAction, time: datepicker.getDate()})
                     if (dataAction=="download") $("#download-info").toggle(200);
 
                 }
@@ -283,6 +279,7 @@
                   case "yearly": datepicker.selectYear(); break;
                   case "quarterly": datepicker.selectQuarter(); break;
                   case "monthly": datepicker.selectMonth(); break;
+                  case "decade": datepicker.selectDecade(); break;
                   case "daily": datepicker.selectDay(); break;
                   default: break;
                 }
@@ -431,7 +428,7 @@
           display: block;
           border: 1px solid grey;
           position: relative;
-          width: 15em;
+          width: 18em;
           padding: 0em;
           
       }
@@ -449,7 +446,7 @@
         border: 1px solid grey;
         padding: 0 !important;
         margin: 0 !important;
-        width: 15em;
+        width: 18em;
         height: 30px;
       }
     </style>
