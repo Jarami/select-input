@@ -1,4 +1,55 @@
-<!doctype html>
+## AUTOBUILD_PRAGMA deferred
+User::Module.modify :UTH_WebContainer_Monitoring do
+
+  methods planner_data: <<'  METHOD'
+    # $TfsSource:  $
+    def self.planner_data(params)
+
+      planner_manager = User::UTH_Module_PlannerManager.instance
+      planners = {
+        "ur_tps_yearly" => { planner: planner_manager.get_UR_TPS_Yearly, period: "yearly" },
+        "ur_tps_quarterly" => { planner: planner_manager.get_UR_TPS_Quarterly, period: "quarterly" },
+        "ur_tps_monthly" => { planner: planner_manager.get_UR_TPS_Monthly, period: "monthly" },
+        "ur_tps_decade" => { planner: planner_manager.get_UR_TPS_Decade, period: "decade" },
+        "ur_tps_daily" => { planner: planner_manager.get_UR_TPS_Daily, period: "daily" },
+        "kzo_tps_yearly_first" => { planner: planner_manager.get_KZO_TPS_Yearly_First, period: "yearly" },
+        "kzo_tps_yearly_second" => { planner: planner_manager.get_KZO_TPS_Yearly_Second, period: "yearly" },
+        "kzo_tps_quarterly" => { planner: planner_manager.get_KZO_TPS_Quarterly, period: "quarterly" },
+        "kzo_tps_monthly" => { planner: planner_manager.get_KZO_TPS_Monthly, period: "monthly" },
+        "kzo_lb_yearly" => { planner: planner_manager.get_KZO_LB_Yearly, period: "yearly" },
+        "kzo_lb_quarterly" => { planner: planner_manager.get_KZO_LB_Quarterly, period: "quarterly" },
+        "kzo_lb_monthly" => { planner: planner_manager.get_KZO_LB_Monthly, period: "monthly" }
+      }
+      #planners.default = { planner: User::UTH_Module_PlannerManager.instance.get_UR_TPS_Daily, period: "daily" }
+
+      if params["planner"] && params["action"]
+        # послан ajax-запрос => вернуть json
+        @params['request'].setContentType('application/json')
+        @params['request'].set_character_encoding('utf-8')
+
+        begin 
+          planner = planners[params["planner"]][:planner]
+          time = params['time'] || User::UTH_Time.now
+          time = Time.at(time.to_i)
+    
+          h = User::UTH_ORM_Handlers.get(:Отчеты)
+
+          case params["action"]
+            when "show" then 
+              r = h.получить_последний_отчет(planner, time)
+              return { success: true, action: "show", input: r[:input_data][0..19], output: r[:output_data][0..19], planned_time: r[:planned_time]}.to_json
+            when "download" then
+              r = h.получить_последний_отчет_архив(planner, time)
+              return { success: true, action: "download", input: r[:input_data], output: r[:output_data], planned_time: r[:planned_time]}.to_json
+            else 
+              return { success: false, message: "Неизвестное значение параметра 'action'." }.to_json		
+          end
+        rescue => error
+          return { success: false, message: error.message }.to_json
+        end
+      else
+        # первый запрос => вернуть html
+        html = %`<!doctype html>
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -263,7 +314,7 @@
           ajaxHandler.register(modelInput);
           ajaxHandler.register(modelOutput);
           
-          var datepicker = $("#period-selector").daterangepicker({startDate: new Date(1463393049000) });
+          var datepicker = $("#period-selector").daterangepicker({startDate: new Date(#{ User::UTH_Time.now.to_i * 1000 }) });
           
           $(".planner-selection").click( function(e){
                 var dataAction = $(e.target).attr("data-action");
@@ -457,19 +508,8 @@
   
   <body>
     <div class="planner-selection controls" style="display:inline-block;">
-      <select id="planner-selector" class="input" style="float:left;">
-        <option value=ur_tps_yearly data-period=yearly>УР ТПС: год</option>
-        <option value=ur_tps_quarterly data-period=quarterly>УР ТПС: квартал</option>
-        <option value=ur_tps_monthly data-period=monthly>УР ТПС: месяц</option>
-        <option value=ur_tps_decade data-period=decade>УР ТПС: декада</option>
-        <option value=ur_tps_daily data-period=daily>УР ТПС: сменно-суточный</option>
-        <option value=kzo_tps_yearly_first data-period=yearly>КЗО ТПС: год I</option>
-        <option value=kzo_tps_yearly_second data-period=yearly>КЗО ТПС: год II</option>
-        <option value=kzo_tps_quarterly data-period=quarterly>КЗО ТПС: квартал</option>
-        <option value=kzo_tps_monthly data-period=monthly>КЗО ТПС: месяц</option>
-        <option value=kzo_lb_yearly data-period=yearly>КЗО ЛБ: год</option>
-        <option value=kzo_lb_quarterly data-period=quarterly>КЗО ЛБ: квартал</option>
-        <option value=kzo_lb_monthly data-period=monthly>КЗО ЛБ: месяц</option>
+      <select id="planner-selector" class="input" style="float:left;">` + planners.map{|plannerValue, planner| %`
+        <option value=#{plannerValue} data-period=#{planner[:period]}>` + planner[:planner].get_name + %`</option>`}.join + %`
       </select>
       <div id="period-selector" style="float:left;display:block;"></div>
       <button data-action="show" style="float:left;">Показать</button>
@@ -502,4 +542,8 @@
       </a>
     </div>
   </body>
-</html>
+</html>`
+      end
+    end
+  METHOD
+end
